@@ -167,7 +167,8 @@ function bindEvents() {
 }
 
 function fillFranchiseSelect() {
-  const franchises = [...new Set(sets.map((set) => set.franchise))];
+  const playableSets = getPlayableSets(sets);
+  const franchises = [...new Set(playableSets.map((set) => set.franchise))];
   const allOption = document.createElement("option");
   allOption.value = "all";
   allOption.textContent = "Tutti i TCG";
@@ -185,7 +186,7 @@ function fillFranchiseSelect() {
 
 function fillSetSelect() {
   const selectedFranchise = elements.franchiseSelect.value;
-  const availableSets = filterSetsByFranchise(selectedFranchise);
+  const availableSets = getPlayableSets(filterSetsByFranchise(selectedFranchise));
   elements.setSelect.replaceChildren(
     ...availableSets.map((set) => {
       const option = document.createElement("option");
@@ -198,6 +199,18 @@ function fillSetSelect() {
 
 function filterSetsByFranchise(franchise) {
   return franchise === "all" ? sets : sets.filter((set) => set.franchise === franchise);
+}
+
+function getPlayableSets(sourceSets) {
+  return sourceSets.filter((set) => {
+    const targetCards = cards.filter((card) => card.setId === set.id);
+    const sameTcgDecoys = cards.filter((card) => {
+      const cardSet = byId.get(card.setId);
+      return card.setId !== set.id && cardSet?.franchise === set.franchise;
+    });
+
+    return targetCards.length >= 5 && sameTcgDecoys.length >= 4;
+  });
 }
 
 function handleSetupChange(event) {
@@ -227,8 +240,18 @@ function startGame(event) {
 
   const mode = getFormValue("mode");
   const franchise = elements.franchiseSelect.value;
-  const candidateSets = filterSetsByFranchise(franchise);
-  const specificSet = byId.get(elements.setSelect.value) || candidateSets[0];
+  const candidateSets = getPlayableSets(filterSetsByFranchise(franchise));
+
+  if (!candidateSets.length) {
+    if (elements.maintenanceStatus) {
+      elements.maintenanceStatus.textContent =
+        "Database caricato, ma non ci sono abbastanza carte dello stesso TCG per creare il quiz. Riprova dopo la prossima sincronizzazione.";
+    }
+    showMaintenance();
+    return;
+  }
+
+  const specificSet = candidateSets.find((set) => set.id === elements.setSelect.value) || candidateSets[0];
 
   state.config = {
     mode,
@@ -343,19 +366,14 @@ function buildQuestion() {
 }
 
 function getDecoys(count) {
-  const otherCards = cards.filter((card) => card.setId !== state.targetSet.id);
   const target = state.targetSet;
-  let pool = otherCards;
-
-  if (state.config.difficulty === "hard" || state.round > 4) {
-    const sameFranchise = otherCards.filter((card) => byId.get(card.setId).franchise === target.franchise);
-    if (sameFranchise.length >= count) {
-      pool = sameFranchise;
-    }
-  }
+  let pool = cards.filter((card) => {
+    const set = byId.get(card.setId);
+    return card.setId !== target.id && set?.franchise === target.franchise;
+  });
 
   if (state.config.difficulty === "hard" || state.round > 7) {
-    const sameEra = pool.filter((card) => byId.get(card.setId).era === target.era);
+    const sameEra = pool.filter((card) => byId.get(card.setId)?.era === target.era);
     if (sameEra.length >= count) {
       pool = sameEra;
     }
