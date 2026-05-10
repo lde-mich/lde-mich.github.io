@@ -415,9 +415,15 @@ function renderCardButton(card, index) {
   art.className = "card-choice__art";
   const img = document.createElement("img");
   img.alt = "";
+  img.loading = "eager";
+  img.decoding = "async";
   img.src = card.imageSmall || card.imageLarge;
+  img.addEventListener("load", () => {
+    art.classList.add("is-loaded");
+  });
   img.addEventListener("error", () => {
     img.onerror = null;
+    img.remove();
     handleBrokenCardImage(card);
   });
   art.append(img);
