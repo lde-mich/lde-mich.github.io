@@ -24,16 +24,33 @@ const state = {
 };
 
 const elements = {
+  homeScreen: document.querySelector("#homeScreen"),
   setupScreen: document.querySelector("#setupScreen"),
+  catalogScreen: document.querySelector("#catalogScreen"),
   maintenanceScreen: document.querySelector("#maintenanceScreen"),
   drawScreen: document.querySelector("#drawScreen"),
   gameScreen: document.querySelector("#gameScreen"),
   resultScreen: document.querySelector("#resultScreen"),
+  homeNavButton: document.querySelector("#homeNavButton"),
+  gameNavButton: document.querySelector("#gameNavButton"),
+  catalogNavButton: document.querySelector("#catalogNavButton"),
+  openGameButton: document.querySelector("#openGameButton"),
+  openCatalogButton: document.querySelector("#openCatalogButton"),
+  catalogPlayButton: document.querySelector("#catalogPlayButton"),
   setupForm: document.querySelector("#setupForm"),
   franchiseSelect: document.querySelector("#franchiseSelect"),
   setSelect: document.querySelector("#setSelect"),
   setField: document.querySelector("#setField"),
   dataStatus: document.querySelector("#dataStatus"),
+  homeDataStatus: document.querySelector("#homeDataStatus"),
+  homeCardCount: document.querySelector("#homeCardCount"),
+  homeSetCount: document.querySelector("#homeSetCount"),
+  homeGameCount: document.querySelector("#homeGameCount"),
+  catalogFranchiseSelect: document.querySelector("#catalogFranchiseSelect"),
+  catalogSetSelect: document.querySelector("#catalogSetSelect"),
+  catalogSearchInput: document.querySelector("#catalogSearchInput"),
+  catalogMeta: document.querySelector("#catalogMeta"),
+  catalogGrid: document.querySelector("#catalogGrid"),
   maintenanceStatus: document.querySelector("#maintenanceStatus"),
   scorePill: document.querySelector(".score-pill"),
   rouletteTicker: document.querySelector("#rouletteTicker"),
@@ -70,8 +87,12 @@ async function init() {
 
   fillFranchiseSelect();
   fillSetSelect();
+  fillCatalogFranchiseSelect();
+  fillCatalogSetSelect();
   bindEvents();
+  updateHomeStats();
   updateScore();
+  showScreen("home");
 }
 
 async function loadCardDatabase() {
@@ -87,19 +108,14 @@ async function loadCardDatabase() {
     cards = normalized.cards;
     byId = new Map(sets.map((set) => [set.id, set]));
 
-    if (elements.dataStatus) {
-      elements.dataStatus.textContent = `Database reale caricato: ${formatNumber(cards.length)} carte, ${formatNumber(sets.length)} set.`;
-    }
+    updateDataStatus(`Database reale caricato: ${formatNumber(cards.length)} carte, ${formatNumber(sets.length)} set.`);
     return true;
   } catch (error) {
     sets = [];
     cards = [];
     byId = new Map();
 
-    if (elements.dataStatus) {
-      elements.dataStatus.textContent =
-        "Database carte non disponibile. Il gioco tornerà online appena finita la sincronizzazione.";
-    }
+    updateDataStatus("Database carte non disponibile. Il gioco tornerà online appena finita la sincronizzazione.");
 
     if (elements.maintenanceStatus) {
       elements.maintenanceStatus.textContent =
@@ -159,6 +175,28 @@ function normalizeDatabase(database) {
 }
 
 function bindEvents() {
+  elements.homeNavButton.addEventListener("click", () => showScreen("home"));
+  elements.gameNavButton.addEventListener("click", () => showScreen("setup"));
+  elements.catalogNavButton.addEventListener("click", () => {
+    showScreen("catalog");
+    renderCatalog();
+  });
+  elements.openGameButton.addEventListener("click", () => showScreen("setup"));
+  elements.openCatalogButton.addEventListener("click", () => {
+    showScreen("catalog");
+    renderCatalog();
+  });
+  elements.catalogPlayButton.addEventListener("click", () => {
+    applyCatalogSelectionToQuiz();
+    showScreen("setup");
+  });
+  elements.catalogFranchiseSelect.addEventListener("change", () => {
+    elements.catalogSearchInput.value = "";
+    fillCatalogSetSelect();
+    renderCatalog();
+  });
+  elements.catalogSetSelect.addEventListener("change", renderCatalog);
+  elements.catalogSearchInput.addEventListener("input", renderCatalog);
   elements.setupForm.addEventListener("change", handleSetupChange);
   elements.setupForm.addEventListener("submit", startGame);
   elements.playAgainButton.addEventListener("click", resetToSetup);
@@ -197,6 +235,69 @@ function fillSetSelect() {
   );
 }
 
+function fillCatalogFranchiseSelect() {
+  const franchises = [...new Set(sets.map((set) => set.franchise))]
+    .filter(Boolean)
+    .sort((first, second) => first.localeCompare(second, "it"));
+
+  elements.catalogFranchiseSelect.replaceChildren(
+    ...franchises.map((franchise) => {
+      const option = document.createElement("option");
+      option.value = franchise;
+      option.textContent = franchise;
+      return option;
+    }),
+  );
+}
+
+function fillCatalogSetSelect() {
+  const selectedFranchise = elements.catalogFranchiseSelect.value;
+  const availableSets = sets
+    .filter((set) => set.franchise === selectedFranchise)
+    .sort(compareSetsByName);
+
+  const allOption = document.createElement("option");
+  allOption.value = "all";
+  allOption.textContent = "Tutte le espansioni";
+
+  const setOptions = availableSets.map((set) => {
+    const option = document.createElement("option");
+    option.value = set.id;
+    option.textContent = `${set.name} (${set.code})`;
+    return option;
+  });
+
+  elements.catalogSetSelect.replaceChildren(allOption, ...setOptions);
+
+  if (setOptions.length) {
+    elements.catalogSetSelect.value = setOptions[0].value;
+  }
+}
+
+function updateDataStatus(message) {
+  if (elements.dataStatus) {
+    elements.dataStatus.textContent = message;
+  }
+
+  if (elements.homeDataStatus) {
+    elements.homeDataStatus.textContent = message;
+  }
+}
+
+function updateHomeStats() {
+  if (elements.homeCardCount) {
+    elements.homeCardCount.textContent = formatNumber(cards.length);
+  }
+
+  if (elements.homeSetCount) {
+    elements.homeSetCount.textContent = formatNumber(sets.length);
+  }
+
+  if (elements.homeGameCount) {
+    elements.homeGameCount.textContent = formatNumber(new Set(sets.map((set) => set.franchise)).size);
+  }
+}
+
 function filterSetsByFranchise(franchise) {
   return franchise === "all" ? sets : sets.filter((set) => set.franchise === franchise);
 }
@@ -211,6 +312,117 @@ function getPlayableSets(sourceSets) {
 
     return targetCards.length >= 5 && sameTcgDecoys.length >= 4;
   });
+}
+
+function renderCatalog() {
+  const selectedFranchise = elements.catalogFranchiseSelect.value;
+  const selectedSetId = elements.catalogSetSelect.value;
+  const query = normalizeSearch(elements.catalogSearchInput.value);
+  const catalogCards = getCatalogCards(selectedFranchise, selectedSetId, query);
+  const selectedSet = byId.get(selectedSetId);
+  const scopeLabel =
+    selectedSetId === "all" || !selectedSet
+      ? selectedFranchise
+      : `${selectedFranchise} - ${selectedSet.name}`;
+
+  elements.catalogPlayButton.textContent =
+    selectedSetId === "all" ? "Allenati su questi set" : "Allenati su questo set";
+
+  elements.catalogMeta.textContent = catalogCards.length
+    ? `${formatNumber(catalogCards.length)} carte in ${scopeLabel}, ordinate dalla meno rara alla più rara.`
+    : `Nessuna carta trovata in ${scopeLabel}.`;
+
+  if (!catalogCards.length) {
+    const empty = document.createElement("div");
+    empty.className = "catalog-empty";
+    empty.textContent = "Nessun risultato con questi filtri.";
+    elements.catalogGrid.replaceChildren(empty);
+    return;
+  }
+
+  elements.catalogGrid.replaceChildren(...catalogCards.map(renderCatalogCard));
+}
+
+function getCatalogCards(franchise, setId, query) {
+  return cards
+    .filter((card) => {
+      const set = byId.get(card.setId);
+      const inFranchise = set?.franchise === franchise;
+      const inSet = setId === "all" || card.setId === setId;
+      const matchesSearch =
+        !query ||
+        normalizeSearch(card.name).includes(query) ||
+        normalizeSearch(card.code).includes(query) ||
+        normalizeSearch(set?.name || "").includes(query);
+
+      return inFranchise && inSet && matchesSearch;
+    })
+    .sort(compareCardsForCatalog);
+}
+
+function renderCatalogCard(card) {
+  const set = byId.get(card.setId);
+  const article = document.createElement("article");
+  article.className = "catalog-card";
+
+  const imageWrap = document.createElement("div");
+  imageWrap.className = "catalog-card__art";
+
+  const img = document.createElement("img");
+  img.alt = card.name;
+  img.loading = "lazy";
+  img.decoding = "async";
+  img.src = card.imageSmall || card.imageLarge;
+  img.addEventListener("load", () => {
+    imageWrap.classList.add("is-loaded");
+  });
+  img.addEventListener("error", () => {
+    img.remove();
+    imageWrap.classList.add("is-missing");
+    imageWrap.textContent = "Immagine non disponibile";
+  });
+  imageWrap.append(img);
+
+  const body = document.createElement("div");
+  body.className = "catalog-card__body";
+
+  const badges = document.createElement("div");
+  badges.className = "catalog-card__badges";
+
+  const rarity = document.createElement("span");
+  rarity.className = "catalog-card__badge";
+  rarity.textContent = card.rarity ? card.rarity : "Rarità n/d";
+
+  const code = document.createElement("span");
+  code.className = "catalog-card__badge catalog-card__badge--code";
+  code.textContent = card.code;
+  badges.append(rarity, code);
+
+  const title = document.createElement("h3");
+  title.textContent = card.name;
+
+  const details = document.createElement("p");
+  details.textContent = `${card.type} - ${set.franchise} - ${set.name}`;
+
+  body.append(badges, title, details);
+  article.append(imageWrap, body);
+  return article;
+}
+
+function applyCatalogSelectionToQuiz() {
+  const selectedFranchise = elements.catalogFranchiseSelect.value;
+  const selectedSetId = elements.catalogSetSelect.value;
+  elements.franchiseSelect.value = selectedFranchise;
+  fillSetSelect();
+
+  if (selectedSetId !== "all" && [...elements.setSelect.options].some((option) => option.value === selectedSetId)) {
+    setFormRadio("mode", "specific");
+    elements.setSelect.value = selectedSetId;
+  } else {
+    setFormRadio("mode", "roulette");
+  }
+
+  updateSetSelectState();
 }
 
 function hasCardImage(card) {
@@ -636,12 +848,35 @@ function resetToSetup() {
 }
 
 function showScreen(name) {
+  if (["home", "setup", "catalog", "maintenance"].includes(name)) {
+    clearTimer();
+    state.accepting = false;
+  }
+
+  elements.homeScreen.hidden = name !== "home";
   elements.setupScreen.hidden = name !== "setup";
+  elements.catalogScreen.hidden = name !== "catalog";
   elements.maintenanceScreen.hidden = name !== "maintenance";
   elements.drawScreen.hidden = name !== "draw";
   elements.gameScreen.hidden = name !== "game";
   elements.resultScreen.hidden = name !== "result";
-  elements.scorePill.hidden = name === "maintenance";
+  elements.scorePill.hidden = !["draw", "game", "result"].includes(name);
+  updateNavState(name);
+}
+
+function updateNavState(name) {
+  const activeSection = name === "catalog" ? "catalog" : name === "home" ? "home" : "game";
+  const buttons = [
+    [elements.homeNavButton, "home"],
+    [elements.gameNavButton, "game"],
+    [elements.catalogNavButton, "catalog"],
+  ];
+
+  for (const [button, section] of buttons) {
+    const isActive = section === activeSection;
+    button.classList.toggle("is-active", isActive);
+    button.setAttribute("aria-current", isActive ? "page" : "false");
+  }
 }
 
 function showMaintenance() {
@@ -675,6 +910,101 @@ function shuffle(items) {
 
 function formatNumber(value) {
   return new Intl.NumberFormat("it-IT").format(value);
+}
+
+function normalizeSearch(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+function compareSetsByName(first, second) {
+  return first.name.localeCompare(second.name, "it", { numeric: true });
+}
+
+function compareCardsForCatalog(first, second) {
+  const rarityDiff = getRarityRank(first.rarity) - getRarityRank(second.rarity);
+  if (rarityDiff) {
+    return rarityDiff;
+  }
+
+  const firstSet = byId.get(first.setId);
+  const secondSet = byId.get(second.setId);
+  const setDiff = (firstSet?.name || "").localeCompare(secondSet?.name || "", "it", { numeric: true });
+  if (setDiff) {
+    return setDiff;
+  }
+
+  const numberDiff = getCardSortNumber(first.code) - getCardSortNumber(second.code);
+  if (numberDiff) {
+    return numberDiff;
+  }
+
+  return first.name.localeCompare(second.name, "it", { numeric: true });
+}
+
+function getRarityRank(rarity) {
+  const value = normalizeSearch(rarity).replace(/[^a-z0-9]+/g, " ");
+
+  if (!value) {
+    return 0;
+  }
+
+  if (/\b(sec|scr|secret|segreta)\b/.test(value)) {
+    return 8;
+  }
+
+  if (/\b(sp|special|speciale|parallel|parallela|alt)\b/.test(value)) {
+    return 7;
+  }
+
+  if (/\b(ur|ultra)\b/.test(value)) {
+    return 6;
+  }
+
+  if (/\b(sr|super)\b/.test(value)) {
+    return 5;
+  }
+
+  if (/\b(rr|double|doppia)\b/.test(value)) {
+    return 4;
+  }
+
+  if (/\b(r|rare|rara|leader|l)\b/.test(value)) {
+    return 3;
+  }
+
+  if (/\b(uc|uncommon|non comune)\b/.test(value)) {
+    return 2;
+  }
+
+  if (/\b(c|common|comune)\b/.test(value)) {
+    return 1;
+  }
+
+  if (/\b(p|promo|promotional)\b/.test(value)) {
+    return 7;
+  }
+
+  return 0;
+}
+
+function getCardSortNumber(code) {
+  const matches = String(code || "").match(/\d+/g);
+  if (!matches) {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  return Number(matches[matches.length - 1]);
+}
+
+function setFormRadio(name, value) {
+  const field = elements.setupForm.querySelector(`[name="${name}"][value="${value}"]`);
+  if (field) {
+    field.checked = true;
+  }
 }
 
 function escapeHtml(value) {

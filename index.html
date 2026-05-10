@@ -18,13 +18,75 @@
             <p class="eyebrow">Arena quiz TCG</p>
             <h1 id="app-title">Maestro dei Set</h1>
           </div>
+          <nav class="top-nav" aria-label="Navigazione principale">
+            <button id="homeNavButton" class="nav-button is-active" type="button">Home</button>
+            <button id="gameNavButton" class="nav-button" type="button">Gioco</button>
+            <button id="catalogNavButton" class="nav-button" type="button">Catalogo</button>
+          </nav>
           <div class="score-pill" aria-live="polite">
             <span>Punti</span>
             <strong id="scoreValue">0</strong>
           </div>
         </header>
 
-        <section id="setupScreen" class="screen setup-screen">
+        <section id="homeScreen" class="screen home-screen">
+          <div class="home-hero">
+            <div class="home-copy">
+              <p class="eyebrow">Hub collezionisti</p>
+              <h2>Allenati sui set, poi sfoglia il tuo archivio TCG.</h2>
+              <p>
+                Entra nel quiz per mettere alla prova l'occhio da collezionista oppure apri il
+                catalogo per esplorare carte reali, espansioni e rarità.
+              </p>
+              <p id="homeDataStatus" class="data-status" aria-live="polite">
+                Caricamento database carte...
+              </p>
+            </div>
+
+            <div class="home-actions" aria-label="Scegli dove andare">
+              <button id="openGameButton" class="dashboard-card dashboard-card--game" type="button">
+                <span class="dashboard-card__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img">
+                    <path d="M8 5v14l11-7z"></path>
+                  </svg>
+                </span>
+                <span>
+                  <strong>Gioca al quiz</strong>
+                  <em>Roulette, set specifico e sfida a punti.</em>
+                </span>
+              </button>
+
+              <button id="openCatalogButton" class="dashboard-card dashboard-card--catalog" type="button">
+                <span class="dashboard-card__icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img">
+                    <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5A2.5 2.5 0 0 1 17.5 21H6.25A2.25 2.25 0 0 1 4 18.75V5.5zm3 0V18h10.5a.5.5 0 0 0 .5-.5V5H6.5a.5.5 0 0 0-.5.5zm1.5 3h7v2h-7v-2zm0 4h6v2h-6v-2z"></path>
+                  </svg>
+                </span>
+                <span>
+                  <strong>Catalogo carte</strong>
+                  <em>Cerca per TCG, espansione e nome carta.</em>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <div class="home-stats" aria-label="Statistiche database">
+            <div>
+              <span>Carte reali</span>
+              <strong id="homeCardCount">0</strong>
+            </div>
+            <div>
+              <span>Espansioni</span>
+              <strong id="homeSetCount">0</strong>
+            </div>
+            <div>
+              <span>TCG</span>
+              <strong id="homeGameCount">0</strong>
+            </div>
+          </div>
+        </section>
+
+        <section id="setupScreen" class="screen setup-screen" hidden>
           <div class="intro-grid">
             <div class="intro-copy">
               <h2>Riconosci il set prima degli altri.</h2>
@@ -110,6 +172,34 @@
               Inizia partita
             </button>
           </form>
+        </section>
+
+        <section id="catalogScreen" class="screen catalog-screen" hidden>
+          <div class="catalog-head">
+            <div>
+              <p class="eyebrow">Catalogo carte</p>
+              <h2>Esplora il database reale.</h2>
+            </div>
+            <button id="catalogPlayButton" class="secondary-action" type="button">Allenati su questi set</button>
+          </div>
+
+          <div class="catalog-toolbar" aria-label="Filtri catalogo">
+            <label>
+              <span>TCG</span>
+              <select id="catalogFranchiseSelect" aria-label="Scegli TCG"></select>
+            </label>
+            <label>
+              <span>Espansione</span>
+              <select id="catalogSetSelect" aria-label="Scegli espansione"></select>
+            </label>
+            <label class="catalog-search">
+              <span>Cerca carta</span>
+              <input id="catalogSearchInput" type="search" placeholder="Nome carta..." autocomplete="off" />
+            </label>
+          </div>
+
+          <p id="catalogMeta" class="catalog-meta" aria-live="polite"></p>
+          <div id="catalogGrid" class="catalog-grid" aria-live="polite"></div>
         </section>
 
         <section id="maintenanceScreen" class="screen maintenance-screen" hidden>
