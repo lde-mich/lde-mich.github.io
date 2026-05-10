@@ -338,10 +338,7 @@ function getRoundSeconds() {
 }
 
 function buildQuestion() {
-  const style =
-    state.config.questionStyle === "mixed"
-      ? sample(["belongs", "intruder"])
-      : state.config.questionStyle;
+  const style = state.config.questionStyle;
 
   const targetCards = cards.filter((card) => card.setId === state.targetSet.id && hasCardImage(card));
   const decoys = getDecoys(style === "belongs" ? 4 : 1);
@@ -428,7 +425,6 @@ function renderCardButton(card, index) {
   const meta = document.createElement("div");
   meta.className = "card-choice__meta";
   meta.innerHTML = `
-    <span class="card-choice__code">${escapeHtml(card.code)}</span>
     <span class="card-choice__name">${escapeHtml(card.name)}</span>
     <span class="card-choice__details">${escapeHtml(card.type)} - ${escapeHtml(set.franchise)}</span>
   `;

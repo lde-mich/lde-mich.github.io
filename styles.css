@@ -624,18 +624,6 @@ select {
   text-align: left;
 }
 
-.card-choice__code {
-  width: max-content;
-  max-width: 100%;
-  padding: 4px 7px;
-  color: #ffffff;
-  background: var(--violet-strong);
-  border-radius: 999px;
-  font-size: 0.74rem;
-  font-weight: 900;
-  overflow-wrap: anywhere;
-}
-
 .card-choice__name {
   min-height: 44px;
   color: var(--ink);
