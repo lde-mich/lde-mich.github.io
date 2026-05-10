@@ -125,7 +125,7 @@ function normalizeDatabase(database) {
       imageSmall: card.imageSmall || card.image || "",
       imageLarge: card.imageLarge || card.imageSmall || card.image || "",
     }))
-    .filter((card) => card.id && card.code && card.name && card.setId);
+    .filter((card) => card.id && card.code && card.name && card.setId && hasCardImage(card));
 
   const cardsBySet = normalizedCards.reduce((map, card) => {
     map.set(card.setId, (map.get(card.setId) || 0) + 1);
@@ -203,14 +203,18 @@ function filterSetsByFranchise(franchise) {
 
 function getPlayableSets(sourceSets) {
   return sourceSets.filter((set) => {
-    const targetCards = cards.filter((card) => card.setId === set.id);
+    const targetCards = cards.filter((card) => card.setId === set.id && hasCardImage(card));
     const sameTcgDecoys = cards.filter((card) => {
       const cardSet = byId.get(card.setId);
-      return card.setId !== set.id && cardSet?.franchise === set.franchise;
+      return card.setId !== set.id && cardSet?.franchise === set.franchise && hasCardImage(card);
     });
 
     return targetCards.length >= 5 && sameTcgDecoys.length >= 4;
   });
+}
+
+function hasCardImage(card) {
+  return Boolean(card.imageSmall || card.imageLarge);
 }
 
 function handleSetupChange(event) {
@@ -339,7 +343,7 @@ function buildQuestion() {
       ? sample(["belongs", "intruder"])
       : state.config.questionStyle;
 
-  const targetCards = cards.filter((card) => card.setId === state.targetSet.id);
+  const targetCards = cards.filter((card) => card.setId === state.targetSet.id && hasCardImage(card));
   const decoys = getDecoys(style === "belongs" ? 4 : 1);
   let choices;
   let answerCode;
@@ -369,7 +373,7 @@ function getDecoys(count) {
   const target = state.targetSet;
   let pool = cards.filter((card) => {
     const set = byId.get(card.setId);
-    return card.setId !== target.id && set?.franchise === target.franchise;
+    return card.setId !== target.id && set?.franchise === target.franchise && hasCardImage(card);
   });
 
   if (state.config.difficulty === "hard" || state.round > 7) {
@@ -414,10 +418,10 @@ function renderCardButton(card, index) {
   art.className = "card-choice__art";
   const img = document.createElement("img");
   img.alt = "";
-  img.src = card.imageSmall || card.imageLarge || makeCardArt(card, set);
+  img.src = card.imageSmall || card.imageLarge;
   img.addEventListener("error", () => {
     img.onerror = null;
-    img.src = makeCardArt(card, set);
+    handleBrokenCardImage(card);
   });
   art.append(img);
 
@@ -527,6 +531,40 @@ function handleTimeout() {
   elements.feedback.classList.add("is-bad");
   updateScore();
   setTimeout(nextRound, 1250);
+}
+
+function handleBrokenCardImage(card) {
+  cards = cards.filter((candidate) => candidate.id !== card.id);
+
+  if (!state.accepting || !state.currentQuestion?.choices.some((choice) => choice.id === card.id)) {
+    return;
+  }
+
+  state.accepting = false;
+  clearTimer();
+
+  for (const button of elements.cardsGrid.querySelectorAll(".card-choice")) {
+    button.disabled = true;
+  }
+
+  elements.feedback.textContent = "Un'immagine reale non è disponibile. Rigenero il turno...";
+  elements.feedback.className = "feedback";
+
+  window.setTimeout(retryCurrentRound, 700);
+}
+
+function retryCurrentRound() {
+  if (!getPlayableSets([state.targetSet]).length) {
+    if (elements.maintenanceStatus) {
+      elements.maintenanceStatus.textContent =
+        "Alcune immagini reali non sono disponibili. Il set tornerà giocabile dopo la prossima sincronizzazione.";
+    }
+    showMaintenance();
+    return;
+  }
+
+  state.round -= 1;
+  nextRound();
 }
 
 function handleKeyboardChoice(event) {

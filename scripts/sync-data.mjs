@@ -81,6 +81,41 @@ async function syncPokemonItalian() {
       continue;
     }
 
+    const normalizedSetCards = [];
+
+    for (const card of setCards) {
+      if (!card.id || !card.name || !card.localId) {
+        continue;
+      }
+
+      const imageSmall = withCardQuality(card.image, "low", "webp");
+      const imageLarge = withCardQuality(card.image, "high", "webp");
+
+      if (!imageSmall && !imageLarge) {
+        continue;
+      }
+
+      normalizedSetCards.push({
+        id: `pokemon-${card.id}`,
+        game: "pokemon",
+        language: "it",
+        setId,
+        code: `${set.id.toUpperCase()}-${card.localId}`,
+        localId: String(card.localId),
+        name: card.name,
+        type: "Carta Pokémon",
+        rarity: "",
+        imageSmall,
+        imageLarge,
+        source: "tcgdex",
+        sourceId: card.id,
+      });
+    }
+
+    if (normalizedSetCards.length < minCardsPerSet) {
+      continue;
+    }
+
     sets.push({
       id: setId,
       game: "pokemon",
@@ -93,32 +128,12 @@ async function syncPokemonItalian() {
       source: "tcgdex",
       sourceId: set.id,
       releaseDate: set.releaseDate || "",
-      cardCount: setCards.length,
+      cardCount: normalizedSetCards.length,
       logo: withAssetExtension(set.logo, "webp"),
       symbol: withAssetExtension(set.symbol, "webp"),
     });
 
-    for (const card of setCards) {
-      if (!card.id || !card.name || !card.localId) {
-        continue;
-      }
-
-      cards.push({
-        id: `pokemon-${card.id}`,
-        game: "pokemon",
-        language: "it",
-        setId,
-        code: `${set.id.toUpperCase()}-${card.localId}`,
-        localId: String(card.localId),
-        name: card.name,
-        type: "Carta Pokémon",
-        rarity: "",
-        imageSmall: withCardQuality(card.image, "low", "webp"),
-        imageLarge: withCardQuality(card.image, "high", "webp"),
-        source: "tcgdex",
-        sourceId: card.id,
-      });
-    }
+    cards.push(...normalizedSetCards);
   }
 
   return { sets, cards };
@@ -140,6 +155,13 @@ async function syncApiTcgGame({ slug, franchise, language, endpoint }) {
   const cards = [];
 
   for (const card of rawCards) {
+    const imageSmall = card.images?.small || card.images?.large || "";
+    const imageLarge = card.images?.large || card.images?.small || "";
+
+    if (!imageSmall && !imageLarge) {
+      continue;
+    }
+
     const sourceSet = card.set || {};
     const extractedCode = extractSetCode(sourceSet.id || sourceSet.name || card.getIt || card.code);
     const setCode = extractedCode || inferSetCodeFromCard(card.code || card.id);
@@ -176,8 +198,8 @@ async function syncApiTcgGame({ slug, franchise, language, endpoint }) {
       name: String(card.name || ""),
       type: String(card.type || card.cardType || "Card"),
       rarity: String(card.rarity || ""),
-      imageSmall: card.images?.small || card.images?.large || "",
-      imageLarge: card.images?.large || card.images?.small || "",
+      imageSmall,
+      imageLarge,
       source: "apitcg",
       sourceId: String(card.id || card.code || ""),
     });
