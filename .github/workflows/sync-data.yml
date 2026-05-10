@@ -1,0 +1,39 @@
+name: Sync TCG data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * 1"
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Sync card database
+        env:
+          APITCG_API_KEY: ${{ secrets.APITCG_API_KEY }}
+          SYNC_GAMES: pokemon,one-piece,dragon-ball
+        run: node scripts/sync-data.mjs
+
+      - name: Commit generated data
+        run: |
+          if [ -n "$(git status --porcelain data/tcg-data.json data/manifest.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add data/tcg-data.json data/manifest.json
+            git commit -m "Update TCG data"
+            git push
+          else
+            echo "No data changes to commit."
+          fi
