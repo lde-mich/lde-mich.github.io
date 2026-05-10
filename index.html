@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Maestro dei Set, un quiz dinamico per riconoscere i set TCG e sfidare altri collezionisti."
+    />
+    <title>Maestro dei Set TCG</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="game-panel" aria-labelledby="app-title">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Arena quiz TCG</p>
+            <h1 id="app-title">Maestro dei Set</h1>
+          </div>
+          <div class="score-pill" aria-live="polite">
+            <span>Punti</span>
+            <strong id="scoreValue">0</strong>
+          </div>
+        </header>
+
+        <section id="setupScreen" class="screen setup-screen">
+          <div class="intro-grid">
+            <div class="intro-copy">
+              <h2>Riconosci il set prima degli altri.</h2>
+              <p>
+                Scegli una modalità, guarda le 5 carte e trova quella giusta.
+                Serie, tempo e difficoltà fanno salire il punteggio.
+              </p>
+              <p id="dataStatus" class="data-status" aria-live="polite">
+                Caricamento database carte...
+              </p>
+            </div>
+
+            <div class="preview-card" aria-hidden="true">
+              <div class="preview-card__art"></div>
+            <div class="preview-card__body">
+              <span>SV1</span>
+                <strong>Cacciatore di set</strong>
+            </div>
+          </div>
+          </div>
+
+          <form id="setupForm" class="setup-form">
+            <fieldset>
+              <legend>Modalità</legend>
+              <div class="segmented-control" role="radiogroup" aria-label="Modalità di gioco">
+                <label>
+                  <input type="radio" name="mode" value="roulette" checked />
+                  <span>Roulette</span>
+                </label>
+                <label>
+                  <input type="radio" name="mode" value="specific" />
+                  <span>Set specifico</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Gioco</legend>
+              <select id="franchiseSelect" name="franchise" aria-label="Scegli il gioco">
+                <option value="all">Tutti i TCG</option>
+              </select>
+            </fieldset>
+
+            <fieldset id="setField" class="is-disabled">
+              <legend>Set</legend>
+              <select id="setSelect" name="set" aria-label="Scegli il set" disabled></select>
+            </fieldset>
+
+            <fieldset>
+              <legend>Domanda</legend>
+              <div class="segmented-control" role="radiogroup" aria-label="Tipo di domanda">
+                <label>
+                  <input type="radio" name="questionStyle" value="belongs" checked />
+                  <span>Trova la carta del set</span>
+                </label>
+                <label>
+                  <input type="radio" name="questionStyle" value="intruder" />
+                  <span>Trova l'intrusa</span>
+                </label>
+                <label>
+                  <input type="radio" name="questionStyle" value="mixed" />
+                  <span>Misto</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend>Difficoltà</legend>
+              <div class="segmented-control" role="radiogroup" aria-label="Difficoltà">
+                <label>
+                  <input type="radio" name="difficulty" value="normal" checked />
+                  <span>Normale</span>
+                </label>
+                <label>
+                  <input type="radio" name="difficulty" value="hard" />
+                  <span>Esperto</span>
+                </label>
+              </div>
+            </fieldset>
+
+            <button class="primary-action" type="submit">
+              <span class="button-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" role="img">
+                  <path d="M8 5v14l11-7z"></path>
+                </svg>
+              </span>
+              Inizia partita
+            </button>
+          </form>
+        </section>
+
+        <section id="maintenanceScreen" class="screen maintenance-screen" hidden>
+          <div class="maintenance-panel">
+            <p class="eyebrow">Database carte non disponibile</p>
+            <h2>Sito in manutenzione</h2>
+            <p id="maintenanceStatus">
+              Stiamo aggiornando set, espansioni e immagini reali. Torna tra poco per giocare.
+            </p>
+          </div>
+        </section>
+
+        <section id="drawScreen" class="screen draw-screen" hidden>
+          <div class="draw-panel">
+            <p class="eyebrow">Roulette dei set</p>
+            <h2>Estrazione in corso</h2>
+            <div class="roulette-window" aria-live="polite">
+              <div id="rouletteTicker" class="roulette-ticker">Preparazione...</div>
+            </div>
+            <div class="roulette-lock">
+              <span>Set scelto</span>
+              <strong id="drawSetName">-</strong>
+              <em id="drawSetCode">-</em>
+            </div>
+          </div>
+        </section>
+
+        <section id="gameScreen" class="screen game-screen" hidden>
+          <div class="round-head">
+            <div>
+              <p class="eyebrow" id="roundModeLabel">Roulette</p>
+              <h2 id="questionTitle">Quale carta appartiene a questo set?</h2>
+            </div>
+            <div class="round-stats" aria-label="Statistiche round">
+              <div>
+                <span>Turno</span>
+                <strong id="roundValue">1/10</strong>
+              </div>
+              <div>
+                <span>Serie</span>
+                <strong id="streakValue">0</strong>
+              </div>
+              <div>
+                <span>Tempo</span>
+                <strong id="timerValue">15.0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="target-strip">
+            <div>
+              <span>Set bersaglio</span>
+              <strong id="targetSetName">Database reale</strong>
+            </div>
+            <div class="target-code" id="targetSetCode">TCG</div>
+          </div>
+
+          <div class="timer-track" aria-hidden="true">
+            <div id="timerBar"></div>
+          </div>
+
+          <div id="cardsGrid" class="cards-grid" aria-live="polite"></div>
+
+          <p id="feedback" class="feedback" aria-live="polite"></p>
+        </section>
+
+        <section id="resultScreen" class="screen result-screen" hidden>
+          <div class="result-card">
+            <p class="eyebrow">Risultato finale</p>
+            <h2 id="resultTitle">Specialista dei Set</h2>
+            <div class="final-score">
+              <span>Punteggio</span>
+              <strong id="finalScore">0</strong>
+            </div>
+            <dl class="result-stats">
+              <div>
+                <dt>Corrette</dt>
+                <dd id="correctValue">0/10</dd>
+              </div>
+              <div>
+                <dt>Serie max</dt>
+                <dd id="bestStreakValue">0</dd>
+              </div>
+              <div>
+                <dt>Set</dt>
+                <dd id="playedSetValue">-</dd>
+              </div>
+            </dl>
+            <div class="result-actions">
+              <button id="shareButton" class="primary-action" type="button">
+                <span class="button-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" role="img">
+                    <path d="M18 16.1c-.76 0-1.44.3-1.96.77L8.91 12.7a2.3 2.3 0 0 0 0-1.39l7.05-4.11A2.5 2.5 0 1 0 15.2 5.4L8.16 9.52a2.5 2.5 0 1 0 0 4.97l7.1 4.16A2.5 2.5 0 1 0 18 16.1z"></path>
+                  </svg>
+                </span>
+                Condividi punteggio
+              </button>
+              <button id="playAgainButton" class="secondary-action" type="button">Gioca ancora</button>
+            </div>
+            <p id="shareStatus" class="share-status" aria-live="polite"></p>
+          </div>
+        </section>
+
+        <p class="legal-note">
+          Fan project non affiliato a The Pokémon Company, Bandai, Shueisha o Toei Animation.
+          Dati e immagini appartengono ai rispettivi proprietari.
+        </p>
+      </section>
+    </main>
+
+    <script src="app.js" defer></script>
+  </body>
+</html>
