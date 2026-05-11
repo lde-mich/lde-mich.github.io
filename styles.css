@@ -1412,20 +1412,11 @@ select {
 }
 
 .card-modal__frame::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at var(--shine-x) var(--shine-y), rgba(255, 255, 255, 0.36), transparent 24%),
-    linear-gradient(115deg, transparent 0 34%, rgba(255, 255, 255, 0.15) 42%, transparent 52%);
-  mix-blend-mode: screen;
-  opacity: 0.58;
-  transition: opacity 160ms ease;
+  display: none;
 }
 
 .card-modal__frame:hover::after {
-  opacity: 0.86;
+  display: none;
 }
 
 .card-modal__frame img {

@@ -388,7 +388,6 @@ function getCatalogCards(franchise, setId, query) {
 }
 
 function renderCatalogCard(card) {
-  const set = byId.get(card.setId);
   const article = document.createElement("article");
   article.className = "catalog-card";
   article.tabIndex = 0;
@@ -409,7 +408,7 @@ function renderCatalogCard(card) {
   img.alt = card.name;
   img.loading = "lazy";
   img.decoding = "async";
-  img.src = card.imageSmall || card.imageLarge;
+  img.src = card.imageLarge || card.imageSmall;
   img.addEventListener("load", () => {
     imageWrap.classList.add("is-loaded");
   });
@@ -438,10 +437,7 @@ function renderCatalogCard(card) {
   const title = document.createElement("h3");
   title.textContent = card.name;
 
-  const details = document.createElement("p");
-  details.textContent = `${card.type} - ${set.franchise} - ${set.name}`;
-
-  body.append(badges, title, details);
+  body.append(badges, title);
   article.append(imageWrap, body);
   return article;
 }
@@ -729,7 +725,7 @@ function renderCardButton(card, index) {
   img.alt = "";
   img.loading = "eager";
   img.decoding = "async";
-  img.src = card.imageSmall || card.imageLarge;
+  img.src = card.imageLarge || card.imageSmall;
   img.addEventListener("load", () => {
     art.classList.add("is-loaded");
   });
