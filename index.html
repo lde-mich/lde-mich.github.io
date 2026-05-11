@@ -314,6 +314,20 @@
           Dati e immagini appartengono ai rispettivi proprietari.
         </p>
       </section>
+
+      <div id="cardPreviewModal" class="card-modal" role="dialog" aria-modal="true" aria-labelledby="previewCardTitle" hidden>
+        <button id="cardPreviewBackdrop" class="card-modal__backdrop" type="button" aria-label="Chiudi anteprima carta"></button>
+        <div class="card-modal__panel">
+          <button id="closeCardPreviewButton" class="card-modal__close" type="button" aria-label="Chiudi anteprima">×</button>
+          <div id="previewCardFrame" class="card-modal__frame">
+            <img id="previewCardImage" alt="" />
+          </div>
+          <div class="card-modal__info">
+            <h2 id="previewCardTitle">Carta</h2>
+            <p id="previewCardMeta"></p>
+          </div>
+        </div>
+      </div>
     </main>
 
     <script src="app.js" defer></script>

@@ -55,6 +55,13 @@ const elements = {
   catalogFilterSummary: document.querySelector("#catalogFilterSummary"),
   catalogMeta: document.querySelector("#catalogMeta"),
   catalogGrid: document.querySelector("#catalogGrid"),
+  cardPreviewModal: document.querySelector("#cardPreviewModal"),
+  cardPreviewBackdrop: document.querySelector("#cardPreviewBackdrop"),
+  closeCardPreviewButton: document.querySelector("#closeCardPreviewButton"),
+  previewCardFrame: document.querySelector("#previewCardFrame"),
+  previewCardImage: document.querySelector("#previewCardImage"),
+  previewCardTitle: document.querySelector("#previewCardTitle"),
+  previewCardMeta: document.querySelector("#previewCardMeta"),
   maintenanceStatus: document.querySelector("#maintenanceStatus"),
   scorePill: document.querySelector(".score-pill"),
   rouletteTicker: document.querySelector("#rouletteTicker"),
@@ -202,11 +209,16 @@ function bindEvents() {
   });
   elements.catalogSetSelect.addEventListener("change", renderCatalog);
   elements.catalogSearchInput.addEventListener("input", renderCatalog);
+  elements.cardPreviewBackdrop.addEventListener("click", closeCardPreview);
+  elements.closeCardPreviewButton.addEventListener("click", closeCardPreview);
+  elements.previewCardFrame.addEventListener("mousemove", handlePreviewTilt);
+  elements.previewCardFrame.addEventListener("mouseleave", resetPreviewTilt);
   elements.setupForm.addEventListener("change", handleSetupChange);
   elements.setupForm.addEventListener("submit", startGame);
   elements.playAgainButton.addEventListener("click", resetToSetup);
   elements.shareButton.addEventListener("click", shareResult);
   window.addEventListener("keydown", handleKeyboardChoice);
+  window.addEventListener("keydown", handleCardPreviewKeyboard);
 }
 
 function fillFranchiseSelect() {
@@ -379,6 +391,16 @@ function renderCatalogCard(card) {
   const set = byId.get(card.setId);
   const article = document.createElement("article");
   article.className = "catalog-card";
+  article.tabIndex = 0;
+  article.setAttribute("role", "button");
+  article.setAttribute("aria-label", `Apri ${card.name} in alta definizione`);
+  article.addEventListener("click", () => openCardPreview(card));
+  article.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      openCardPreview(card);
+    }
+  });
 
   const imageWrap = document.createElement("div");
   imageWrap.className = "catalog-card__art";
@@ -422,6 +444,69 @@ function renderCatalogCard(card) {
   body.append(badges, title, details);
   article.append(imageWrap, body);
   return article;
+}
+
+function openCardPreview(card) {
+  const set = byId.get(card.setId);
+  resetPreviewTilt();
+  let fallbackUsed = false;
+  elements.previewCardImage.onerror = () => {
+    if (!fallbackUsed && card.imageSmall) {
+      fallbackUsed = true;
+      elements.previewCardImage.src = card.imageSmall;
+    }
+  };
+  elements.previewCardImage.src = card.imageLarge || card.imageSmall;
+  elements.previewCardImage.alt = card.name;
+  elements.previewCardTitle.textContent = card.name;
+  elements.previewCardMeta.textContent = [
+    set?.franchise,
+    set?.name,
+    card.rarity || "Rarità n/d",
+    card.code,
+  ]
+    .filter(Boolean)
+    .join(" · ");
+  elements.cardPreviewModal.hidden = false;
+  elements.cardPreviewModal.classList.add("is-open");
+  elements.closeCardPreviewButton.focus();
+}
+
+function closeCardPreview() {
+  elements.cardPreviewModal.classList.remove("is-open");
+  elements.cardPreviewModal.hidden = true;
+  elements.previewCardImage.onerror = null;
+  elements.previewCardImage.removeAttribute("src");
+  resetPreviewTilt();
+}
+
+function handleCardPreviewKeyboard(event) {
+  if (event.key === "Escape" && !elements.cardPreviewModal.hidden) {
+    closeCardPreview();
+  }
+}
+
+function handlePreviewTilt(event) {
+  if (window.matchMedia("(hover: none)").matches) {
+    return;
+  }
+
+  const bounds = elements.previewCardFrame.getBoundingClientRect();
+  const x = (event.clientX - bounds.left) / bounds.width;
+  const y = (event.clientY - bounds.top) / bounds.height;
+  const rotateY = (x - 0.5) * 18;
+  const rotateX = (0.5 - y) * 18;
+  elements.previewCardFrame.style.setProperty("--tilt-x", `${rotateX.toFixed(2)}deg`);
+  elements.previewCardFrame.style.setProperty("--tilt-y", `${rotateY.toFixed(2)}deg`);
+  elements.previewCardFrame.style.setProperty("--shine-x", `${(x * 100).toFixed(1)}%`);
+  elements.previewCardFrame.style.setProperty("--shine-y", `${(y * 100).toFixed(1)}%`);
+}
+
+function resetPreviewTilt() {
+  elements.previewCardFrame.style.setProperty("--tilt-x", "0deg");
+  elements.previewCardFrame.style.setProperty("--tilt-y", "0deg");
+  elements.previewCardFrame.style.setProperty("--shine-x", "50%");
+  elements.previewCardFrame.style.setProperty("--shine-y", "20%");
 }
 
 function applyCatalogSelectionToQuiz() {
