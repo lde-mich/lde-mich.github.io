@@ -183,20 +183,26 @@
             <button id="catalogPlayButton" class="secondary-action" type="button">Allenati su questi set</button>
           </div>
 
-          <div class="catalog-toolbar" aria-label="Filtri catalogo">
-            <label>
-              <span>TCG</span>
-              <select id="catalogFranchiseSelect" aria-label="Scegli TCG"></select>
-            </label>
-            <label>
-              <span>Espansione</span>
-              <select id="catalogSetSelect" aria-label="Scegli espansione"></select>
-            </label>
-            <label class="catalog-search">
-              <span>Cerca carta</span>
-              <input id="catalogSearchInput" type="search" placeholder="Nome carta..." autocomplete="off" />
-            </label>
-          </div>
+          <details id="catalogFilters" class="catalog-filter-panel" open>
+            <summary>
+              <span>Filtri catalogo</span>
+              <em id="catalogFilterSummary">Scegli TCG, espansione e carta</em>
+            </summary>
+            <div class="catalog-toolbar" aria-label="Filtri catalogo">
+              <label>
+                <span>TCG</span>
+                <select id="catalogFranchiseSelect" aria-label="Scegli TCG"></select>
+              </label>
+              <label>
+                <span>Espansione</span>
+                <select id="catalogSetSelect" aria-label="Scegli espansione"></select>
+              </label>
+              <label class="catalog-search">
+                <span>Cerca carta</span>
+                <input id="catalogSearchInput" type="search" placeholder="Nome carta..." autocomplete="off" />
+              </label>
+            </div>
+          </details>
 
           <p id="catalogMeta" class="catalog-meta" aria-live="polite"></p>
           <div id="catalogGrid" class="catalog-grid" aria-live="polite"></div>

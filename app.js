@@ -24,6 +24,7 @@ const state = {
 };
 
 const elements = {
+  gamePanel: document.querySelector(".game-panel"),
   homeScreen: document.querySelector("#homeScreen"),
   setupScreen: document.querySelector("#setupScreen"),
   catalogScreen: document.querySelector("#catalogScreen"),
@@ -49,6 +50,8 @@ const elements = {
   catalogFranchiseSelect: document.querySelector("#catalogFranchiseSelect"),
   catalogSetSelect: document.querySelector("#catalogSetSelect"),
   catalogSearchInput: document.querySelector("#catalogSearchInput"),
+  catalogFilters: document.querySelector("#catalogFilters"),
+  catalogFilterSummary: document.querySelector("#catalogFilterSummary"),
   catalogMeta: document.querySelector("#catalogMeta"),
   catalogGrid: document.querySelector("#catalogGrid"),
   maintenanceStatus: document.querySelector("#maintenanceStatus"),
@@ -89,6 +92,7 @@ async function init() {
   fillSetSelect();
   fillCatalogFranchiseSelect();
   fillCatalogSetSelect();
+  setInitialCatalogFilterState();
   bindEvents();
   updateHomeStats();
   updateScore();
@@ -298,6 +302,14 @@ function updateHomeStats() {
   }
 }
 
+function setInitialCatalogFilterState() {
+  if (!elements.catalogFilters) {
+    return;
+  }
+
+  elements.catalogFilters.open = window.matchMedia("(min-width: 721px)").matches;
+}
+
 function filterSetsByFranchise(franchise) {
   return franchise === "all" ? sets : sets.filter((set) => set.franchise === franchise);
 }
@@ -324,9 +336,11 @@ function renderCatalog() {
     selectedSetId === "all" || !selectedSet
       ? selectedFranchise
       : `${selectedFranchise} - ${selectedSet.name}`;
+  const searchLabel = elements.catalogSearchInput.value.trim();
 
   elements.catalogPlayButton.textContent =
     selectedSetId === "all" ? "Allenati su questi set" : "Allenati su questo set";
+  elements.catalogFilterSummary.textContent = searchLabel ? `${scopeLabel} · ${searchLabel}` : scopeLabel;
 
   elements.catalogMeta.textContent = catalogCards.length
     ? `${formatNumber(catalogCards.length)} carte in ${scopeLabel}, ordinate dalla meno rara alla più rara.`
@@ -861,6 +875,9 @@ function showScreen(name) {
   elements.gameScreen.hidden = name !== "game";
   elements.resultScreen.hidden = name !== "result";
   elements.scorePill.hidden = !["draw", "game", "result"].includes(name);
+  elements.gamePanel.dataset.screen = name;
+  elements.gamePanel.classList.toggle("is-home-view", name === "home");
+  elements.gamePanel.classList.toggle("is-compact-view", name !== "home");
   updateNavState(name);
 }
 

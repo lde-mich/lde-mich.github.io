@@ -116,6 +116,23 @@ button {
   min-width: 0;
 }
 
+.game-panel.is-compact-view .topbar > div:first-child {
+  display: none;
+}
+
+.game-panel.is-compact-view .topbar {
+  padding-block: 8px;
+}
+
+.game-panel.is-compact-view .top-nav {
+  width: min(520px, 100%);
+}
+
+.game-panel.is-compact-view .score-pill {
+  min-width: 84px;
+  padding: 8px 12px;
+}
+
 .top-nav {
   flex: 0 1 auto;
   display: flex;
@@ -632,14 +649,70 @@ select {
   flex: 0 0 auto;
 }
 
+.catalog-filter-panel {
+  overflow: hidden;
+  background: rgba(12, 10, 20, 0.72);
+  border: 1px solid rgba(168, 121, 255, 0.22);
+  border-radius: var(--radius);
+}
+
+.catalog-filter-panel summary {
+  min-height: 46px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  color: #ffffff;
+  cursor: pointer;
+  list-style: none;
+}
+
+.catalog-filter-panel summary::-webkit-details-marker {
+  display: none;
+}
+
+.catalog-filter-panel summary::after {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--muted);
+  border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg);
+  transition: transform 160ms ease;
+}
+
+.catalog-filter-panel[open] summary {
+  border-bottom: 1px solid rgba(168, 121, 255, 0.18);
+}
+
+.catalog-filter-panel[open] summary::after {
+  transform: rotate(225deg);
+}
+
+.catalog-filter-panel summary span {
+  font-size: 0.82rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.catalog-filter-panel summary em {
+  min-width: 0;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-style: normal;
+  font-weight: 760;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .catalog-toolbar {
   display: grid;
   grid-template-columns: minmax(150px, 0.75fr) minmax(220px, 1fr) minmax(220px, 1.15fr);
   gap: 10px;
   padding: 12px;
-  background: rgba(12, 10, 20, 0.72);
-  border: 1px solid rgba(168, 121, 255, 0.22);
-  border-radius: var(--radius);
+  background: transparent;
 }
 
 .catalog-toolbar label {
@@ -1386,6 +1459,12 @@ select {
     gap: 8px;
   }
 
+  .game-panel.is-compact-view .topbar {
+    flex-wrap: nowrap;
+    padding: 6px;
+    gap: 6px;
+  }
+
   .topbar .eyebrow {
     font-size: 0.62rem;
   }
@@ -1412,6 +1491,11 @@ select {
     font-size: 1.05rem;
   }
 
+  .game-panel.is-compact-view .score-pill {
+    min-width: 64px;
+    padding: 6px 8px;
+  }
+
   .top-nav {
     order: 3;
     width: 100%;
@@ -1423,6 +1507,17 @@ select {
     min-height: 32px;
     padding: 6px 8px;
     font-size: 0.75rem;
+  }
+
+  .game-panel.is-compact-view .top-nav {
+    order: 0;
+    flex: 1 1 auto;
+    width: auto;
+  }
+
+  .game-panel.is-compact-view .nav-button {
+    min-height: 34px;
+    padding-inline: 6px;
   }
 
   .screen {
@@ -1555,17 +1650,41 @@ select {
   }
 
   .catalog-screen {
-    gap: 7px;
+    gap: 6px;
   }
 
   .catalog-head {
-    align-items: stretch;
-    flex-direction: column;
+    align-items: center;
+    flex-direction: row;
     gap: 8px;
   }
 
+  .catalog-head .eyebrow {
+    display: none;
+  }
+
+  .catalog-head h2 {
+    font-size: clamp(1.1rem, 5vw, 1.35rem);
+    line-height: 1.05;
+  }
+
   .catalog-head .secondary-action {
-    width: 100%;
+    width: auto;
+    min-height: 34px;
+    padding: 7px 10px;
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+
+  .catalog-filter-panel summary {
+    min-height: 38px;
+    gap: 7px;
+    padding: 8px 10px;
+  }
+
+  .catalog-filter-panel summary span,
+  .catalog-filter-panel summary em {
+    font-size: 0.68rem;
   }
 
   .catalog-toolbar {
@@ -1599,20 +1718,20 @@ select {
   }
 
   .catalog-card {
-    min-height: 238px;
-    grid-template-rows: auto minmax(84px, auto);
+    min-height: 224px;
+    grid-template-rows: minmax(0, 1fr);
     border-radius: 9px;
   }
 
   .catalog-card__art {
-    min-height: 140px;
-    margin: 7px 7px 0;
+    height: 100%;
+    min-height: 210px;
+    margin: 7px;
     border-radius: 7px;
   }
 
   .catalog-card__body {
-    gap: 5px;
-    padding: 7px;
+    display: none;
   }
 
   .catalog-card__badge {
@@ -1677,24 +1796,39 @@ select {
 
   .game-screen {
     grid-template-rows: auto auto 7px minmax(0, 1fr) auto;
-    gap: 7px;
+    gap: 6px;
+  }
+
+  .game-screen .eyebrow {
+    font-size: 0.6rem;
+  }
+
+  .game-screen h2 {
+    font-size: clamp(1.05rem, 5.8vw, 1.55rem);
   }
 
   .cards-grid {
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(3, minmax(0, 1fr));
     gap: 6px;
   }
 
   .card-choice {
     min-height: 0;
     display: grid;
-    grid-template-columns: clamp(48px, 16vw, 64px) minmax(0, 1fr);
-    grid-template-rows: 1fr;
-    gap: 8px;
-    align-items: center;
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) auto;
+    gap: 6px;
+    align-items: stretch;
     padding: 6px;
     border-radius: 9px;
+  }
+
+  .card-choice:nth-child(5) {
+    grid-column: 1 / -1;
+    grid-template-columns: clamp(92px, 28vw, 122px) minmax(0, 1fr);
+    grid-template-rows: 1fr;
+    align-items: center;
   }
 
   .card-choice__art {
@@ -1708,17 +1842,18 @@ select {
   .card-choice__meta {
     min-width: 0;
     padding: 0;
-    gap: 4px;
+    gap: 3px;
   }
 
   .card-choice__name {
     min-height: 0;
-    font-size: 0.82rem;
+    font-size: 0.78rem;
     -webkit-line-clamp: 2;
   }
 
   .card-choice__details {
-    font-size: 0.66rem;
+    display: none;
+    font-size: 0.6rem;
   }
 
   .feedback {
