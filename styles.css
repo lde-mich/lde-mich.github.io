@@ -1085,7 +1085,7 @@ select {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: clamp(8px, 1.1vw, 12px);
   min-height: 0;
 }
@@ -1433,7 +1433,7 @@ select {
   }
 
   .cards-grid {
-    grid-template-columns: repeat(5, minmax(0, 1fr));
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 
   .card-choice {
@@ -1804,12 +1804,13 @@ select {
   }
 
   .game-screen h2 {
-    font-size: clamp(1.05rem, 5.8vw, 1.55rem);
+    font-size: clamp(1.1rem, 6vw, 1.6rem);
+    white-space: nowrap;
   }
 
   .cards-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    grid-template-rows: repeat(3, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
     gap: 6px;
   }
 
@@ -1822,13 +1823,6 @@ select {
     align-items: stretch;
     padding: 6px;
     border-radius: 9px;
-  }
-
-  .card-choice:nth-child(5) {
-    grid-column: 1 / -1;
-    grid-template-columns: clamp(92px, 28vw, 122px) minmax(0, 1fr);
-    grid-template-rows: 1fr;
-    align-items: center;
   }
 
   .card-choice__art {

@@ -5,6 +5,7 @@ let sets = [];
 let cards = [];
 let byId = new Map();
 const totalRounds = 10;
+const choicesPerRound = 4;
 const baseRoundSeconds = 15;
 const dataUrl = "data/tcg-data.json";
 
@@ -322,7 +323,7 @@ function getPlayableSets(sourceSets) {
       return card.setId !== set.id && cardSet?.franchise === set.franchise && hasCardImage(card);
     });
 
-    return targetCards.length >= 5 && sameTcgDecoys.length >= 4;
+    return targetCards.length >= choicesPerRound && sameTcgDecoys.length >= choicesPerRound - 1;
   });
 }
 
@@ -567,7 +568,7 @@ function buildQuestion() {
   const style = state.config.questionStyle;
 
   const targetCards = cards.filter((card) => card.setId === state.targetSet.id && hasCardImage(card));
-  const decoys = getDecoys(style === "belongs" ? 4 : 1);
+  const decoys = getDecoys(style === "belongs" ? choicesPerRound - 1 : 1);
   let choices;
   let answerCode;
 
@@ -579,7 +580,7 @@ function buildQuestion() {
     const answer = decoys[0];
     const sameSetChoices = sampleMany(
       targetCards.filter((card) => card.code !== answer.code),
-      4,
+      choicesPerRound - 1,
     );
     choices = shuffle([...sameSetChoices, answer]);
     answerCode = answer.code;
@@ -617,8 +618,8 @@ function renderRound() {
 
   elements.roundModeLabel.textContent = `${modeName} - ${difficultyName}`;
   elements.questionTitle.textContent = isIntruder
-    ? "Quale carta non appartiene a questo set?"
-    : "Quale carta appartiene a questo set?";
+    ? "Trova l'intrusa"
+    : "Trova la carta del set";
   elements.roundValue.textContent = `${state.round}/${totalRounds}`;
   elements.streakValue.textContent = state.streak;
   elements.timerValue.textContent = state.roundSeconds.toFixed(1);
@@ -801,7 +802,7 @@ function handleKeyboardChoice(event) {
   }
 
   const index = Number(event.key) - 1;
-  if (index < 0 || index > 4) {
+  if (index < 0 || index >= choicesPerRound) {
     return;
   }
 
