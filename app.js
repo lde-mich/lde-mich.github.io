@@ -48,7 +48,6 @@ const elements = {
   homeCardCount: document.querySelector("#homeCardCount"),
   homeSetCount: document.querySelector("#homeSetCount"),
   homeGameCount: document.querySelector("#homeGameCount"),
-  homeShowcase: document.querySelector("#homeShowcase"),
   catalogFranchiseSelect: document.querySelector("#catalogFranchiseSelect"),
   catalogSetSelect: document.querySelector("#catalogSetSelect"),
   catalogSearchInput: document.querySelector("#catalogSearchInput"),
@@ -104,7 +103,6 @@ async function init() {
   setInitialCatalogFilterState();
   bindEvents();
   updateHomeStats();
-  renderHomeShowcase();
   updateScore();
   showScreen("home");
 }
@@ -315,40 +313,6 @@ function updateHomeStats() {
   if (elements.homeGameCount) {
     elements.homeGameCount.textContent = formatNumber(new Set(sets.map((set) => set.franchise)).size);
   }
-}
-
-function renderHomeShowcase() {
-  if (!elements.homeShowcase) {
-    return;
-  }
-
-  const featuredCards = sampleMany(cards.filter(hasCardImage), 4);
-  const nodes = featuredCards.map((card, index) => {
-    const set = byId.get(card.setId);
-    const item = document.createElement("div");
-    item.className = `showcase-card showcase-card--${index + 1}`;
-
-    const img = document.createElement("img");
-    img.alt = "";
-    img.loading = "lazy";
-    img.decoding = "async";
-    img.src = card.imageLarge || card.imageSmall;
-    img.addEventListener("error", () => {
-      item.remove();
-    });
-
-    const badge = document.createElement("span");
-    badge.textContent = set?.franchise || "TCG";
-
-    item.append(img, badge);
-    return item;
-  });
-
-  const impact = document.createElement("div");
-  impact.className = "showcase-impact";
-  impact.textContent = "Set!";
-  nodes.splice(1, 0, impact);
-  elements.homeShowcase.replaceChildren(...nodes);
 }
 
 function setInitialCatalogFilterState() {
