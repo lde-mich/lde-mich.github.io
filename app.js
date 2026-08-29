@@ -37,6 +37,20 @@
     }
   }
 
+  function initializeLiveBadge() {
+    const comingSoonBadge = document.getElementById("coming-soon-badge");
+    const liveBadge = document.getElementById("tiktok-live-badge");
+    const config = window.BALU_SITE_CONFIG;
+    const isTikTokLive = Boolean(config && config.tiktokLive === true);
+
+    if (!comingSoonBadge || !liveBadge) {
+      return;
+    }
+
+    comingSoonBadge.hidden = isTikTokLive;
+    liveBadge.hidden = !isTikTokLive;
+  }
+
   function isNonEmptyString(value) {
     return typeof value === "string" && value.trim().length > 0;
   }
@@ -411,5 +425,6 @@
   }
 
   updateYear();
+  initializeLiveBadge();
   initializeShowcase();
 })();

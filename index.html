@@ -71,7 +71,21 @@
               />
             </picture>
           </div>
-          <span class="status-pill" lang="en">Coming soon</span>
+          <div class="topbar-status">
+            <span class="status-pill" id="coming-soon-badge" lang="en">Coming soon</span>
+            <a
+              class="status-pill status-pill--live"
+              id="tiktok-live-badge"
+              href="https://www.tiktok.com/@balutcgstoree/live"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="BaluStore è in diretta su TikTok: guarda la live (si apre in una nuova scheda)"
+              hidden
+            >
+              <span class="status-pill__live-dot" aria-hidden="true"></span>
+              <span>In live</span>
+            </a>
+          </div>
         </header>
 
         <div class="hero-copy" id="main-content" tabindex="-1">
@@ -116,9 +130,15 @@
               rel="noopener noreferrer"
               aria-label="BaluStore su Instagram (si apre in una nuova scheda)"
             >
-              Instagram
+              <span class="social-link__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <rect x="3" y="3" width="18" height="18" rx="5"></rect>
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <circle class="social-link__icon-dot" cx="17.4" cy="6.7" r="1"></circle>
+                </svg>
+              </span>
+              <span>Instagram</span>
             </a>
-            <span class="social-link telegram is-disabled" aria-disabled="true">Telegram · presto</span>
             <a
               class="social-link tiktok"
               href="https://www.tiktok.com/@balutcgstoree"
@@ -126,8 +146,24 @@
               rel="noopener noreferrer"
               aria-label="BaluStore su TikTok (si apre in una nuova scheda)"
             >
-              TikTok
+              <span class="social-link__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="M14.5 4v9.1a3.9 3.9 0 1 1-3.25-3.85"></path>
+                  <path d="M14.5 4c.45 2.25 1.8 3.6 4 4"></path>
+                </svg>
+              </span>
+              <span>TikTok</span>
             </a>
+            <span class="social-link telegram is-disabled" aria-disabled="true">
+              <span class="social-link__icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m3.5 11.1 16.8-6.7-5.1 15.2-4.5-4.2-2.8 2.2.7-4.8-6-1.7Z"></path>
+                  <path d="m8.5 13 7.8-5.1"></path>
+                </svg>
+              </span>
+              <span>Telegram</span>
+              <span class="social-link__meta">Presto</span>
+            </span>
           </nav>
         </div>
 
@@ -243,6 +279,7 @@
       </div>
     </footer>
 
+    <script src="site-config.js" defer></script>
     <script src="products.js" defer></script>
     <script src="app.js" defer></script>
   </body>
